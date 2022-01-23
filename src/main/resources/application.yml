@@ -7,9 +7,9 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydb
-    username: foo
-    password: bar
+    url: jdbc:postgresql://localhost:5432/shiro-db
+    username: admin
+    password: admin
     driverClassName: org.postgresql.Driver

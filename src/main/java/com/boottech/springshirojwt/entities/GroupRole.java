@@ -15,6 +15,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * <h2>GroupRole</h2>
@@ -43,4 +44,7 @@ public class GroupRole implements Serializable {
 	@Column(unique = true)
 	@Size(min = 1, max = 50)
 	private String code;
+
+	@NotNull
+	private String permissions;
 }

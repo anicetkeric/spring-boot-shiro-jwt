@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -40,6 +41,23 @@ public class UserServiceImpl implements UserService {
             return Optional.empty();
         }
 
+    }
+
+
+    @Override
+    public Optional<User> getById(String id) {
+        return userRepository.findById(UUID.fromString(id));
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
 }

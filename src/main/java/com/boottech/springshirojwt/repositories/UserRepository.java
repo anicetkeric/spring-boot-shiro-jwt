@@ -16,15 +16,15 @@ import java.util.UUID;
  */
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-	@Query("SELECT DISTINCT u FROM user u WHERE u.username = :username")
+	@Query("SELECT DISTINCT u FROM app_user u WHERE u.username = :username")
 	Optional<User> findByUsername(@Param("username") String username);
 
-	@Query("SELECT u FROM user u WHERE u.email = :email")
+	@Query("SELECT u FROM app_user u WHERE u.email = :email")
 	Optional<User> findByEmail(@Param("email") String email);
 
-	@Query("SELECT u FROM user u WHERE u.username = :username AND u.enabled = true")
+	@Query("SELECT u FROM app_user u WHERE u.username = :username AND u.enabled = true")
 	Optional<User> findActiveByUsername(@Param("username") String username);
 
-	@Query("SELECT u FROM user u WHERE u.email = :email AND u.enabled = true")
+	@Query("SELECT u FROM app_user u WHERE u.email = :email AND u.enabled = true")
 	Optional<User> findActiveByEmail(@Param("email") String email);
 }

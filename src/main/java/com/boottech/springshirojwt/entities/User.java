@@ -13,7 +13,8 @@ import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 
-@Entity(name = "user")
+@Builder
+@Entity(name = "app_user")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

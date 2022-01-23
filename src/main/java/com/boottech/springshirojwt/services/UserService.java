@@ -21,4 +21,16 @@ public interface UserService {
      */
     Optional<User> getUserByUsername(String usernameValue);
 
+    /**
+     * @param user ussr object
+     * @return user saved or updated
+     */
+    User save(User user);
+
+    /**
+     * @return list of User
+     */
+    List<User> getUsers();
+
+    Optional<User> getById(String id);
 }
