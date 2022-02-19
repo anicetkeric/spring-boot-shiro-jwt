@@ -52,7 +52,7 @@ public class UserResource {
         }
     }
 
-    @PostMapping()
+    @PostMapping("/sign-up")
     public User adduser(@RequestBody UserDTO dto){
 
         User user= User.builder()
@@ -63,7 +63,8 @@ public class UserResource {
                 .enabled(true).roles(dto.getGroupRoles().stream().map(this::copyDtoToGroupRoleEntity).collect(Collectors.toList()))
                 .build();
 
-        return userService.save(user);
+        //return userService.save(user);
+        return user;
     }
 
     @GetMapping()

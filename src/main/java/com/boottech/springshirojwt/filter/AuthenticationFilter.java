@@ -3,8 +3,6 @@ package com.boottech.springshirojwt.filter;
 import com.boottech.springshirojwt.common.JWTAuthToken;
 import com.boottech.springshirojwt.common.SecurityConstants;
 import com.boottech.springshirojwt.services.TokenManagerService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -18,8 +16,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.Optional;
 
 @Slf4j
 public class AuthenticationFilter extends AuthenticatingFilter {
