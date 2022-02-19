@@ -26,31 +26,34 @@ public class ShiroConfig {
     @Bean("userRealm")
     public UserRealm userRealm() {
         UserRealm userRealm = new UserRealm();
-        PasswordMatcher pwdmatcher = new PasswordMatcher();
-        pwdmatcher.setPasswordService(pwdService());
-        userRealm.setCredentialsMatcher(pwdmatcher);
+        PasswordMatcher pwdMatcher = new PasswordMatcher();
+        pwdMatcher.setPasswordService(pwdService());
+        userRealm.setCredentialsMatcher(pwdMatcher);
         return userRealm;
     }
 
 
-    @Bean("shiroFilter")
+    @Bean("shiroFilterFactoryBean")
     public ShiroFilterFactoryBean shiroFilterFactoryBean(@Qualifier("securityManager")
                                                                      DefaultWebSecurityManager securityManager) {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
 
         Map<String, Filter> filterMap = new HashMap<>();
-        // add custom filter
+        // Add custom filter
         filterMap.put("api", new AuthenticationFilter(null));
         factoryBean.setFilters(filterMap);
 
+        // Config security manager
         factoryBean.setSecurityManager(securityManager);
         factoryBean.setUnauthorizedUrl("/401");
+
 
         /*
          * 自定义url规则
          * http://shiro.apache.org/web.html#urls-
          */
         Map<String, String> filterRuleMap = new HashMap<>();
+        filterRuleMap.put("/api/user/sign-up","anon");
         // 所有请求通过我们自己的JWT Filter
         filterRuleMap.put("/**", "api");
         // 访问401和404页面不通过我们的Filter

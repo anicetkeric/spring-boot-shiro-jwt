@@ -16,15 +16,14 @@
 
 package com.boottech.springshirojwt.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,9 +44,9 @@ public class UserDTO {
     @Size(min = 4, max = 24)
     @NotBlank(message = "username is mandatory")
     private String username;
-
+    @JsonProperty("firstname")
     private String firstName;
-
+    @JsonProperty("lastname")
     private String lastName;
 
     @NotNull
@@ -60,6 +59,7 @@ public class UserDTO {
 
     private boolean enabled;
 
+    @JsonProperty("roles")
     private List<GroupRoleDTO> groupRoles;
 
     private String nickname;
