@@ -3,10 +3,15 @@ package com.boottech.springshirojwt.services;
 import com.boottech.springshirojwt.common.SecurityConstants;
 import com.boottech.springshirojwt.entities.GroupRole;
 import com.boottech.springshirojwt.entities.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
-import io.jsonwebtoken.*;
-import javax.servlet.http.*;
-import java.util.*;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,17 +37,24 @@ public class TokenManagerService {
         return currentUser.orElse(null);
     }
 
-    public String createTokenForUser(String token) {
-      final String usernameFromToken = getUsernameFromToken(token);
-      Optional<User> user = userService.getUserByUsername(usernameFromToken);
+    public String createTokenForUser(String username) {
 
+      Optional<User> user = userService.getUserByUsername(username);
       return user.map(value -> Jwts.builder()
               .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
               .setSubject(value.getUsername())
               .claim("id", value.getId())
               .claim("roles", value.getRoles().stream().map(GroupRole::getCode).collect(Collectors.toList()))
+              .claim("permissions", getPermissions(value.getRoles()) )
               .signWith(SignatureAlgorithm.HS256, SecurityConstants.SECRET)
               .compact()).orElse(null);
+    }
+
+    private List<String> getPermissions(List<GroupRole> roles){
+        return roles.stream()
+                .flatMap(r -> Arrays.stream(r.getPermissions().split(","))
+                        .collect(Collectors.toList()).stream())
+                .collect(Collectors.toList());
     }
 
     public Boolean validateToken(String token, String username) {

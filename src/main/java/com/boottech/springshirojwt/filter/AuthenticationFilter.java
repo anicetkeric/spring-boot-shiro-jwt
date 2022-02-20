@@ -3,19 +3,22 @@ package com.boottech.springshirojwt.filter;
 import com.boottech.springshirojwt.common.JWTAuthToken;
 import com.boottech.springshirojwt.common.SecurityConstants;
 import com.boottech.springshirojwt.services.TokenManagerService;
+import com.boottech.springshirojwt.web.response.ErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Slf4j
 public class AuthenticationFilter extends AuthenticatingFilter {
@@ -28,68 +31,59 @@ public class AuthenticationFilter extends AuthenticatingFilter {
     }
 
     /**
-     * Wrap JWT Token into Authentication Token
+     * Check JWT token
      *
-     * @param servletRequest
-     * @param servletResponse
-     * @return
-     * @throws Exception
+     * @param servletRequest request
+     * @param servletResponse response
+     * @return AuthenticationToken
      */
     @Override
-    protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
+    protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) {
         HttpServletRequest request = WebUtils.toHttp(servletRequest);
         if (request == null) {
-            throw new IllegalArgumentException("request不能为空");
+            throw new IllegalArgumentException("Request cannot be empty");
         }
 
         String jwt = request.getHeader(HttpHeaders.AUTHORIZATION);
         if(StringUtils.isBlank(jwt) || !jwt.startsWith(SecurityConstants.TOKEN_PREFIXE)) {
-            throw new AuthenticationException("token not valid");
+            throw new AuthenticationException("JWT Token is not valid");
         }
 
         String token = jwt.replace(SecurityConstants.TOKEN_PREFIXE, "");
-        if (tokenManagerService.isTokenExpired(token)) {
-            throw new AuthenticationException("JWT Token Expired,token:" + token);
+        if (Boolean.TRUE.equals(tokenManagerService.isTokenExpired(token))) {
+            throw new AuthenticationException("JWT Token is Expired :" + token);
         }
 
-        String newToken = tokenManagerService.createTokenForUser(token);
-        return new JWTAuthToken(newToken);
+        return new JWTAuthToken(token);
     }
 
     /**
      * Access Failure Handling
-     *
-     * @param request
-     * @param response
-     * @return
-     * @throws Exception
      */
     @Override
-    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {
         HttpServletRequest httpServletRequest = WebUtils.toHttp(request);
         HttpServletResponse httpServletResponse = WebUtils.toHttp(response);
         // Return to 401
         httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        // Set the response code to 401 or output the message directly
-        String url = httpServletRequest.getRequestURI();
-        log.error("onAccessDenied url: {}", url);
-       // ApiResult apiResult = ApiResult.fail(ApiCode.UNAUTHORIZED);
-       // HttpServletResponseUtil.printJSON(httpServletResponse, apiResult);
+
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        httpServletResponse.setContentType("application/json");
+
+        String error =new ObjectMapper().writeValueAsString(new ErrorResponse(String.valueOf(HttpStatus.UNAUTHORIZED.value()),HttpStatus.UNAUTHORIZED.getReasonPhrase(), "Access Denied"));
+        httpServletResponse.getWriter().append(error);
+
+        log.error("access Denied url: {}", httpServletRequest.getRequestURI());
         return false;
     }
 
     /**
      * Determine whether access is allowed
-     *
-     * @param request
-     * @param response
-     * @param mappedValue
-     * @return
      */
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
         String url = WebUtils.toHttp(request).getRequestURI();
-        log.debug("isAccessAllowed url:{}", url);
+        log.debug("Access Allowed url:{}", url);
         if (this.isLoginRequest(request, response)) {
             return true;
         }
@@ -104,40 +98,6 @@ public class AuthenticationFilter extends AuthenticatingFilter {
         return allowed || super.isPermissive(mappedValue);
     }
 
-    /**
-     * Landing Success Processing
-     *
-     * @param token
-     * @param subject
-     * @param request
-     * @param response
-     * @return
-     * @throws Exception
-     */
-    @Override
-    protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) throws Exception {
-        String url = WebUtils.toHttp(request).getRequestURI();
-        log.debug("Authentication success,token:{},url:{}", token, url);
-        // Refresh token
-        JWTAuthToken jwtToken = (JWTAuthToken) token;
-        HttpServletResponse httpServletResponse = WebUtils.toHttp(response);
-        //loginService.refreshToken(jwtToken, httpServletResponse);
-        return true;
-    }
 
-    /**
-     * Landing Failure Handling
-     *
-     * @param token
-     * @param e
-     * @param request
-     * @param response
-     * @return
-     */
-    @Override
-    protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
-        log.error("The landing failed. token:" + token + ",error:" + e.getMessage(), e);
-        return false;
-    }
 
 }

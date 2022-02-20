@@ -1,0 +1,2 @@
+INSERT INTO public.group_role(code, name, permissions) VALUES ('ROLE_ADMIN', 'Admin', 'user:create,user:list,user:delete');
+INSERT INTO public.group_role(code, name, permissions) VALUES ('ROLE_USER', 'User', 'user:list');
