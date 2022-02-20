@@ -1,6 +1,7 @@
 package com.boottech.springshirojwt.services;
 
 
+import com.boottech.springshirojwt.entities.GroupRole;
 import com.boottech.springshirojwt.entities.User;
 
 import java.util.List;
@@ -33,4 +34,6 @@ public interface UserService {
     List<User> getUsers();
 
     Optional<User> getById(String id);
+
+    Optional<GroupRole> getGroupRoleByCode(String code);
 }
