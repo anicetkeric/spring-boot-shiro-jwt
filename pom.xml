@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.boottech</groupId>
     <artifactId>spring-shiro-jwt</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-SNAPSHOT</version>
     <name>spring-shiro-jwt</name>
     <description>spring-shiro-jwt</description>
     <properties>
