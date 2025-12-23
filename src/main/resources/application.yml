@@ -2,14 +2,15 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: spring-boot-shiro-jwt
   jpa:
     database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     hibernate:
       ddl-auto: update
   datasource:
-    url: jdbc:postgresql://localhost:5432/shiro-db
-    username: admin
-    password: admin
-    driverClassName: org.postgresql.Driver
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/shirodb
+    username: dev
+    password: qwerty

@@ -17,10 +17,10 @@ import java.util.Optional;
 public interface UserService {
 
     /**
-     * @param usernameValue username or email
+     * @param username username or email
      * @return Optional User
      */
-    Optional<User> getUserByUsername(String usernameValue);
+    Optional<User> getUserByUsername(String username);
 
     /**
      * @param user ussr object

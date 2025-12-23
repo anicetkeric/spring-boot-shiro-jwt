@@ -1,21 +1,11 @@
-/*
- * Copyright (c) 2019. All right reserved
- * Last Modified 28/06/19 07:40.
- * @aek
- *
- * www.sudcontractors.com
- *
- */
-
 package com.boottech.springshirojwt.entities;
 
 import lombok.*;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * <h2>GroupRole</h2>
@@ -24,11 +14,11 @@ import java.util.List;
  *         <p>
  *         Description: group role for application
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@EqualsAndHashCode
 @Entity
 public class GroupRole implements Serializable {
 

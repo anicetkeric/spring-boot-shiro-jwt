@@ -1,20 +1,11 @@
-/*
- * Copyright (c) 2019. All right reserved
- * Last Modified 04/07/19 22:23.
- * @aek
- *
- * www.sudcontractors.com
- *
- */
-
 package com.boottech.springshirojwt.dto;
 
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 
 /**

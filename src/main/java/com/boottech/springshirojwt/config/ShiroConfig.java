@@ -1,105 +1,101 @@
 package com.boottech.springshirojwt.config;
 
-import com.boottech.springshirojwt.common.UserRealm;
-import com.boottech.springshirojwt.filter.AuthenticationFilter;
-import org.apache.shiro.authc.Authenticator;
+
+import com.boottech.springshirojwt.security.JwtRealm;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
-import org.apache.shiro.authc.credential.PasswordMatcher;
-import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
-import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
-import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
-import org.apache.shiro.mgt.DefaultSubjectDAO;
-import org.apache.shiro.mgt.SessionStorageEvaluator;
-import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.mgt.DefaultWebSessionStorageEvaluator;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.apache.shiro.authc.credential.PasswordService;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.SubjectContext;
+import org.apache.shiro.web.mgt.DefaultWebSubjectFactory;
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.Filter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+/**
+ * Spring configuration class for Apache Shiro.
+ *
+ * <p>
+ * This configuration sets up:
+ * <ul>
+ *     <li>Stateless security using JWT</li>
+ *     <li>A custom {@link JwtRealm}</li>
+ *     <li>Password hashing via {@link PasswordService}</li>
+ *     <li>Method-level authorization annotations</li>
+ * </ul>
+ * </p>
+ */
 @Configuration
 public class ShiroConfig {
 
-
+    /**
+     * Provides the {@link PasswordService} used by Shiro to hash and
+     * verify user passwords.
+     *
+     * @return a default password service implementation
+     */
     @Bean
-    DefaultPasswordService pwdService(){
+    public PasswordService passwordService() {
         return new DefaultPasswordService();
     }
 
-    @Bean("userRealm")
-    public UserRealm userRealm() {
-        UserRealm userRealm = new UserRealm();
-        PasswordMatcher pwdMatcher = new PasswordMatcher();
-        pwdMatcher.setPasswordService(pwdService());
-        userRealm.setCredentialsMatcher(pwdMatcher);
-        userRealm.setCachingEnabled(false);
-        return userRealm;
-    }
-
-
-    @Bean("shiroFilterFactoryBean")
-    public ShiroFilterFactoryBean shiroFilterFactoryBean(@Qualifier("securityManager")
-                                                                     DefaultWebSecurityManager securityManager) {
-        ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
-
-        Map<String, Filter> filterMap = new HashMap<>();
-        // Add custom filter
-        filterMap.put("api", new AuthenticationFilter(null));
-        factoryBean.setFilters(filterMap);
-
-        // Config security manager
-        factoryBean.setSecurityManager(securityManager);
-        factoryBean.setUnauthorizedUrl("/401");
-
-         /*
-        - anon:  Access without authentication
-        - authc:  Must be authenticated to access
-        - user:  You have to remember me to use it
-        - perms:  You can access a resource only if you have permission to it
-        - role:  Have a role permission
-         */
-        Map<String, String> filterRuleMap = new HashMap<>();
-        filterRuleMap.put("/api/user/**", "api");
-        filterRuleMap.put("/api/auth/**","anon");
-        filterRuleMap.put("/401", "anon");
-        factoryBean.setFilterChainDefinitionMap(filterRuleMap);
-        return factoryBean;
-    }
-
+    /**
+     * Enables Shiro security annotations such as {@code @RequiresRoles}
+     * and {@code @RequiresPermissions}.
+     *
+     * @param securityManager the Shiro security manager
+     * @return the authorization attribute source advisor
+     */
     @Bean
-    public SessionStorageEvaluator sessionStorageEvaluator() {
-        DefaultSessionStorageEvaluator sessionStorageEvaluator = new DefaultWebSessionStorageEvaluator();
-        sessionStorageEvaluator.setSessionStorageEnabled(false);
-        return sessionStorageEvaluator;
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(
+            SecurityManager securityManager) {
+
+        AuthorizationAttributeSourceAdvisor advisor =
+                new AuthorizationAttributeSourceAdvisor();
+        advisor.setSecurityManager(securityManager);
+        return advisor;
     }
 
+    /**
+     * Configures the Shiro {@link SecurityManager}.
+     *
+     * <p>
+     * This setup:
+     * <ul>
+     *     <li>Uses {@link JwtRealm} for authentication and authorization</li>
+     *     <li>Disables session creation to support stateless JWT authentication</li>
+     *     <li>Disables session cookies and validation</li>
+     * </ul>
+     * </p>
+     *
+     * @param realm the custom JWT-enabled realm
+     * @return the configured security manager
+     */
     @Bean
-    public DefaultSubjectDAO subjectDAO() {
-        DefaultSubjectDAO defaultSubjectDAO = new DefaultSubjectDAO();
-        defaultSubjectDAO.setSessionStorageEvaluator(sessionStorageEvaluator());
-        return defaultSubjectDAO;
-    }
+    public SecurityManager securityManager(JwtRealm realm) {
+        DefaultSecurityManager sm = new DefaultSecurityManager();
+        sm.setRealm(realm);
 
-    @Bean(name="securityManager")
-    public DefaultWebSecurityManager getDefaultWebSecurityManager() {
+        // Disable session creation for stateless JWT authentication
+        sm.setSubjectFactory(new DefaultWebSubjectFactory() {
+            @Override
+            public Subject createSubject(SubjectContext ctx) {
+                ctx.setSessionCreationEnabled(false);
+                return super.createSubject(ctx);
+            }
+        });
 
-        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(userRealm());
-        securityManager.setSubjectDAO(subjectDAO());
-        return securityManager;
-    }
+        // Disable web session management
+        DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+        sessionManager.setSessionIdCookieEnabled(false);
+        sessionManager.setSessionValidationSchedulerEnabled(false);
+        sm.setSessionManager(sessionManager);
 
-
-    @Bean
-    public Authenticator authenticator() {
-        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
-        authenticator.setRealms(List.of(userRealm()));
-        authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
-        return authenticator;
+        // Make SecurityManager globally accessible
+        SecurityUtils.setSecurityManager(sm);
+        return sm;
     }
 }

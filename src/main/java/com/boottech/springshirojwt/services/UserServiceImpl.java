@@ -4,7 +4,6 @@ import com.boottech.springshirojwt.entities.GroupRole;
 import com.boottech.springshirojwt.entities.User;
 import com.boottech.springshirojwt.repositories.GroupRoleRepository;
 import com.boottech.springshirojwt.repositories.UserRepository;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,22 +25,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserByUsername(String usernameValue) {
-        // trim username value
-        String username = StringUtils.trimToNull(usernameValue);
-
-        if(StringUtils.isNotEmpty(username)) {
-            Optional<User> user;
-
-            if (username.contains("@")) {
-                user = userRepository.findActiveByEmail(username);
-            } else {
-                user = userRepository.findActiveByUsername(username);
-            }
-            return user;
-        }else {
-            return Optional.empty();
-        }
+    public Optional<User> getUserByUsername(String username) {
+       return userRepository.findByUsernameAndEnabledTrue(username);
     }
 
 
